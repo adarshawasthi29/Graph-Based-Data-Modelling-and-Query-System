@@ -133,9 +133,9 @@ Write a valid Cypher query for the question below.
 STRICT CYPHER RULES (CRITICAL):
 1. NEVER introduce new variables inside a WHERE NOT pattern expression. This causes a syntax error.
    ❌ BAD: MATCH (s:StorageLocation) WHERE NOT (s)<-[:PICKED_FROM_STORAGE]-(di:DeliveryItem)
-2. To find nodes that DO NOT have a relationship, you MUST use the EXISTS {} subquery syntax.
-   ✅ GOOD: MATCH (s:StorageLocation) WHERE NOT EXISTS { MATCH (s)<-[:PICKED_FROM_STORAGE]-(:DeliveryItem) }
-   ✅ GOOD: MATCH (c:Customer)-[:MADE_PAYMENT]->(p:Payment) WHERE NOT EXISTS { MATCH (p)<-[:CLEARED_BY]-(:JournalEntry) }
+2. To find nodes that DO NOT have a relationship, you MUST use the EXISTS {{}} subquery syntax.
+   ✅ GOOD: MATCH (s:StorageLocation) WHERE NOT EXISTS {{ MATCH (s)<-[:PICKED_FROM_STORAGE]-(:DeliveryItem) }}
+   ✅ GOOD: MATCH (c:Customer)-[:MADE_PAYMENT]->(p:Payment) WHERE NOT EXISTS {{ MATCH (p)<-[:CLEARED_BY]-(:JournalEntry) }}
 3. Return ONLY the raw Cypher query. No explanation. No markdown formatting. No backticks.
 
 Schema:
