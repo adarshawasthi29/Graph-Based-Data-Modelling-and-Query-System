@@ -9,7 +9,7 @@ import {
 import ForceGraph2D from "react-force-graph-2d";
 
 // IMPORTANT: Ensure this matches your FastAPI backend URL
-const API_BASE = "http://localhost:8000";
+const API_BASE = "https://graph-based-data-modelling-and-query-8abj.onrender.com";
 
 type GraphNode = {
   id: string;
