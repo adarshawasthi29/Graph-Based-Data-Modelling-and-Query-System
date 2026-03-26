@@ -1,17 +1,42 @@
-SAP Order-to-Cash Graph Explorer & Conversational AI
-
-
+<img width="1917" height="1026" alt="image" src="https://github.com/user-attachments/assets/4ec89279-7a72-4684-8f2e-7680d528465f" /><img width="1917" height="1026" alt="image" src="https://github.com/user-attachments/assets/ad3c461a-3401-4767-9c9e-d658cbc35462" />SAP Order-to-Cash Graph Explorer & Conversational AI
 📌 Project Overview
-
-
 In enterprise systems, supply chain and financial data are often fragmented across isolated tables (Orders, Deliveries, Invoices, Payments). This project unifies that fragmented data into a cohesive Knowledge Graph and provides an Agentic LLM-powered conversational interface to query, trace, and analyze the data using natural language.
 
+<img width="1917" height="1026" alt="image" src="https://github.com/user-attachments/assets/7d5cdb7a-fb56-4493-879a-58d6978f4612" />
+
+
 🔗 Quick Links
-Live Demo: [Insert Demo Link Here]
+Live Demo: https://graph-based-data-modelling-and-quer-blond.vercel.app/
 
-GitHub Repository: [Insert Repo Link Here]
 
-AI Coding Logs (Cursor/Claude): [Insert link to your logs here]
+💡 How I Approached & Solved the Problem
+Building this system required a deliberate, step-by-step transition from flat, relational data to a highly interconnected, AI-queryable graph. Here is my methodology:
+
+Step 1: Data Engineering & Graph Construction
+The raw dataset consisted of fragmented CSV/JSONL files representing tables. Instead of just loading table headers as nodes, I designed an ingestion pipeline to treat every single data entry as a distinct node.
+
+I flattened nested JSON objects (like complex timestamps) to comply with graph property constraints.
+
+I wrote conditional ingestion scripts to handle missing dependencies (e.g., creating a relationship only if an order actually had a delivery).
+
+The Result: The flat tables were transformed into a rich Neo4j database containing over 2,000 unique nodes and 23,000 relationships, allowing for true, item-level traceability.
+
+Step 2: Schema Extraction & Frontend Visualization
+Once the database was populated, I needed a way to visualize this massive network. I built an API endpoint that dynamically extracts the active schema directly from the Neo4j instance. This schema is fed into a React frontend utilizing react-force-graph-2d, instantly generating an interactive, physics-based map of the supply chain that updates accurately if the underlying database structure changes.
+
+Step 3: Securing the Input (The Guardrail)
+To build a reliable conversational AI, the first line of defense is securing the input. I implemented an initial LLM-powered Guardrail. When a user submits a query, it is evaluated against a strict system prompt and domain definition. If the query is off-topic, creative writing, or a prompt-injection attempt, it is immediately rejected, protecting database compute resources.
+
+Step 4: The Agentic Orchestration Loop
+For queries that pass the guardrail, translating Natural Language to Cypher natively is highly prone to hallucination. To solve this, I designed a multi-agent Worker-Judge Loop:
+
+A Worker LLM takes the verified query and the graph schema to generate a Cypher query.
+
+The backend attempts to execute this query against the Neo4j database.
+
+If successful, the Worker synthesizes the raw JSON results into a natural language response.
+
+Finally, a Judge LLM reviews the Worker's response against the actual database output. If the Judge detects hallucination (e.g., claiming data exists when the DB returned []), it forces the Worker to retry. Otherwise, the verified answer is sent to the user.
 
 🏗️ Architecture & Tech Stack
 The system is built on a modern, decoupled stack designed for high performance and complex LLM orchestration.
@@ -22,21 +47,17 @@ Backend: Python (FastAPI) for lightweight, fast API endpoints.
 
 Database: Neo4j (AuraDB / Local) for native graph storage and traversal.
 
-LLM Orchestration: LangChain integrated with custom Worker-Judge Agentic flow, powered by [Insert your LLM here, e.g., Groq Llama-3 / Google Gemini].
+LLM Orchestration: LangChain integrated with a custom Worker-Judge Agentic flow.
 
-🧠 LLM Orchestration: The Worker-Judge Architecture
+🧠 Deep Dive: LLM Orchestration & The Worker-Judge Architecture
 Instead of relying on a fragile, single-shot LLM prompt, this backend implements a robust, multi-agent evaluation loop to ensure Cypher syntax accuracy and answer quality.
 
 1. The Guardrail (Pre-Execution Validation)
-
-Before any query reaches the database, the user's input is intercepted by a strict domain-restriction guardrail.
-
 Logic: An LLM call evaluates if the prompt is related to supply chain, SAP, or the dataset.
 
-Outcome: If off-topic (e.g., "Write me a poem" or prompt-injection attempts), the system immediately halts and returns: "This system is designed to answer questions related to the provided dataset only."
+Outcome: If off-topic, the system immediately halts and returns: "This system is designed to answer questions related to the provided dataset only."
 
-1. The Orchestration Loop (Worker & Judge)
-
+2. The Orchestration Loop (Worker & Judge)
 If the query passes the guardrail, it enters a MAX_ROUNDS=3 evaluation loop:
 
 Worker (Cypher Generation): The LLM receives the graph schema, strict negative-query syntax rules, and the user's question. It generates raw Cypher.
@@ -51,7 +72,7 @@ If the answer hallucinates data or misrepresents an empty database result, the J
 
 If accurate, the Judge returns PASS, and the data is sent to the client.
 
-Code snippet
+```mermaid
 graph TD
     A[User Chat] --> B{Guardrail Check}
     B -->|Blocked| C[Return: Domain Restricted]
@@ -64,16 +85,18 @@ graph TD
     H -->|Fail / Hallucination| I[Feedback to Worker]
     I --> D
     H -->|Pass| J[Return NL Answer & Cypher to UI]
-
+```
 
 🕸️ Graph Modeling & Database Tradeoffs
+
 Why Neo4j instead of PostgreSQL/SQL?
+
 Answering a query like "Trace the full flow of a billing document" in SQL requires highly complex, computationally expensive Recursive CTEs and multiple JOIN operations. In Neo4j, this is a native, highly performant traversal: MATCH path=(o:Order)-[*]->(p:Payment) RETURN path. Furthermore, LLMs excel at generating Cypher due to its highly semantic, ASCII-art syntax.
 
 Key Architectural Decisions in Modeling:
-Node Granularity: Every individual record (e.g., Order #101, Invoice #504) is instantiated as a unique Node, rather than just aggregating table names. This allows for precise, item-level traceability.
+Node Granularity: By ensuring every entry is a node, queries can trace the exact lineage of a specific physical item through the supply chain.
 
-Property Flattening: Nested JSON objects (like timestamps) are flattened into single-level properties (e.g., time_hours) to comply with Neo4j's native property constraints.
+Property Flattening: Nested JSON objects are flattened into single-level properties to comply with Neo4j's native property constraints, improving indexing speed.
 
 Conditional Edge Creation: To handle incomplete flows, relationship edges are created conditionally (FOREACH ... CASE WHEN). This prevents "ghost nodes" and ensures data integrity.
 
