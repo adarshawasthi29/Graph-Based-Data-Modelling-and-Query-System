@@ -1,0 +1,93 @@
+# =========================
+# 1. Environment & Secrets
+# =========================
+# NEVER commit your API keys or Neo4j credentials!
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+
+# Ignore the massive dataset folder
+sap-order-to-cash-dataset/
+
+# =========================
+# 2. Python Backend (FastAPI)
+# =========================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+.venv/
+env/
+.env/
+Pipfile.lock
+
+# Caches & Logs
+*.log
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# =========================
+# 3. Node.js & Frontend (React/Vite/Next.js)
+# =========================
+node_modules/
+dist/
+dist-ssr/
+build/
+.next/
+out/
+
+# npm / yarn / pnpm diagnostic logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# 4. Data & Datasets
+# =========================
+# Ignore the massive SAP dataset files you downloaded so they don't bloat your repo
+*.csv
+*.jsonl
+# (Optional) If you have a specific folder for raw data:
+data/raw/
+data/*.jsonl
+
+# =========================
+# 5. OS & Editor Files
+# =========================
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs (VS Code, Cursor, PyCharm)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# 6. AI Coding Tools (Cursor / Claude)
+# =========================
+# Internal tool caches
+.claude/
+.cursor/
+
+# ⚠️ IMPORTANT ASSIGNMENT NOTE: 
+# Do NOT ignore the folder where you actually save your exported transcripts!
+# If you create a folder named 'ai_logs' to hold your zip/md files for submission, 
+# make sure it is NOT listed in this file.
